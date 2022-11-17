@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-contract InterviewTest is ERC20Burnable, Ownable, Math {
+contract InterviewTest is ERC20Burnable, Ownable {
     using SafeMath for uint256;
 
     uint256 public totalBorrowed;
