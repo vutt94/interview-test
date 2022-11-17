@@ -4,9 +4,12 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract InterviewTest is ERC20Burnable, Ownable {
+    using Address for address;
+
     uint256 public totalBorrowed;
     uint256 public totalDeposit;
     uint256 public totalCollateral;
@@ -65,6 +68,40 @@ contract InterviewTest is ERC20Burnable, Ownable {
         usersBorrowed[msg.sender] -= paidAmount;
         totalBorrowed -= paidAmount;
         dai.transferFrom(msg.sender, address(this), _amount);
+    }
+
+    function flashLoanDai(address borrower, uint256 borrowAmount) public {
+        uint256 balanceBefore = dai.balanceOf(address(this));
+        require(balanceBefore >= borrowAmount, "Not enough Dai in pool");
+
+        uint256 fee = (borrowAmount * baseRate) / 10**18;
+        // Transfer ETH and handle control to receiver
+        borrower.functionCallWithValue(
+            abi.encodeWithSignature("onReceive(uint256)", fee),
+            borrowAmount
+        );
+
+        require(
+            dai.balanceOf(address(this)) >= balanceBefore + fee,
+            "Flash loan hasn't been paid back"
+        );
+    }
+
+    function flashLoanETH(address borrower, uint256 borrowAmount) public {
+        uint256 balanceBefore = address(this).balance;
+        require(balanceBefore >= borrowAmount, "Not enough ETH in pool");
+
+        uint256 fee = (borrowAmount * baseRate) / 10**18;
+        // Transfer ETH and handle control to receiver
+        borrower.functionCallWithValue(
+            abi.encodeWithSignature("onReceive(uint256)", fee),
+            borrowAmount
+        );
+
+        require(
+            address(this).balance >= balanceBefore + fee,
+            "Flash loan hasn't been paid back"
+        );
     }
 
     function _ETHtoDai(uint256 amount) public returns (uint256) {
