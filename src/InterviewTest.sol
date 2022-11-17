@@ -15,7 +15,7 @@ contract InterviewTest is ERC20Burnable, Ownable {
     IERC20 public constant dai =
         IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
     AggregatorV3Interface internal constant priceFeed =
-        AggregatorV3Interface(0x773616e4d11a78f511299002da57a0a94577f1f4);
+        AggregatorV3Interface(0x773616E4d11A78F511299002da57A0a94577F1f4);
 
     mapping(address => uint256) private usersCollateral;
     mapping(address => uint256) private usersBorrowed;
